@@ -16,7 +16,6 @@ class Tracker:
         self.__is_initialized = False
         self.__previous_timestamp = 0.
 
-
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
         if (measurement_packet.sensor_type == SensorType.LIDAR and

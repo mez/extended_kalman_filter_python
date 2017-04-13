@@ -9,7 +9,7 @@ This is simulating our sensors data stream.
     This is not a generator so if your sample log file is huge it'll load it
     all into memory. For now this is acceptable ;)
 '''
-data_packets = pd.read_csv('../data/sample-laser-radar-measurement-data-1.txt',
+data_packets = pd.read_csv('./data/sample-laser-radar-measurement-data-1.txt',
                 header=None,
                 sep='\t',
                 names=['x'+str(x) for x in range(9)])
