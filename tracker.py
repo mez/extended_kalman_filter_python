@@ -35,7 +35,6 @@ class Tracker:
 
             elif measurement_packet.sensor_type == SensorType.RADAR:
                 #we have the polar space measurements; we need to transform to cart space.
-                print(measurement_packet.rhodot_measured)
                 x,y = polar_2_cart(measurement_packet.rho_measured,
                                  measurement_packet.phi_measured,
                                  measurement_packet.rhodot_measured)
@@ -52,5 +51,13 @@ class Tracker:
         self.__ekf.set_F_and_Q(dt)
 
         #3rd make a prediction
+        self.__ekf.predict()
 
         #4th update prediction
+        if measurement_packet.sensor_type == SensorType.LIDAR:
+            self.__ekf.updateLidar(measurement_packet)
+        elif measurement_packet.sensor_type == SensorType.RADAR:
+            self.__ekf.updateRadar(measurement_packet)
+
+
+        print( "X_: {:>4} \n P_: {:>4}".format(*self.__ekf.current_estimate) )

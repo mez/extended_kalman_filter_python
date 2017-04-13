@@ -3,6 +3,7 @@ utils provides helper classes and methods.
 '''
 
 from enum import Enum
+import numpy as np
 
 def polar_2_cart(ro, phi, ro_dot):
     '''
@@ -67,6 +68,16 @@ class MeasurementPacket:
         self.y_groundtruth      = packet[5]
         self.vx_groundtruth     = packet[6]
         self.vy_groundtruth     = packet[7]
+
+    @property
+    def z(self):
+        '''
+        Returns a vectorized version of the measurement for EKF typically called z.
+        '''
+        if self.sensor_type == SensorType.LIDAR:
+            return nd.array([self.x_measured,self.y_measured]).reshape((2,1))
+        elif self.sensor_type == SensorType.RADAR:
+            return nd.array([self.rho_measured,self.phi_measured,self.rhodot_measured]).reshape((3,1))
 
     def __str__(self):
         if self.sensor_type == SensorType.LIDAR:
