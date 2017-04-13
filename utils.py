@@ -69,22 +69,27 @@ class MeasurementPacket:
         self.vy_groundtruth     = packet[7]
 
     def __str__(self):
-        if self.sensor_type == 'L':
-            return "{:<4} {:<4} {:<8} {:<4} {:<4} {:<4} {:<4} {:<4}".format("LIDAR", self.x_measured,
-                                self.y_measured ,
-                                self.timestamp,
-                                self.x_groundtruth ,
-                                self.y_groundtruth,
-                                self.vx_groundtruth,
-                                self.vy_groundtruth)
-        elif self.sensor_type == 'R':
-            return "{:<4} {:<4} {:<4} {:<8} {:<4} {:<4} {:<4} {:<4} {:<4}".format(
-            "RADAR",
-            self.rho_measured,
-            self.phi_measured ,
-            self.rhodot_measured,
-            self.timestamp    ,
-            self.x_groundtruth,
-            self.y_groundtruth ,
-            self.vx_groundtruth,
-            self.vy_groundtruth )
+        if self.sensor_type == SensorType.LIDAR:
+            return "LIDAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} {:>4}] \n  GROUND TRUTH [{:>4} {:>4} {:>4} {:>4}]".format(
+                    self.timestamp,
+
+                    self.x_measured,
+                    self.y_measured ,
+
+                    self.x_groundtruth ,
+                    self.y_groundtruth,
+                    self.vx_groundtruth,
+                    self.vy_groundtruth)
+
+        elif self.sensor_type == SensorType.RADAR:
+            return "RADAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} <> {:>4} <> {:>4}] \n GROUND TRUTH [{:>4} <> {:>4} <> {:>4} <> {:>4}]".format(
+                    self.timestamp    ,
+
+                    self.rho_measured,
+                    self.phi_measured ,
+                    self.rhodot_measured,
+
+                    self.x_groundtruth,
+                    self.y_groundtruth ,
+                    self.vx_groundtruth,
+                    self.vy_groundtruth )

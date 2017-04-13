@@ -1,6 +1,6 @@
 import numpy as np
 from math import pow
-from utils import SensorType, polar2cart
+from utils import SensorType, polar_2_cart
 from ekf import ExtendedKalmanFilter
 
 
@@ -20,9 +20,9 @@ class Tracker:
         self.__previous_timestamp = 0.
 
 
-    def process_measurement(measurement_packet):
+    def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
-        if (measurement_packet.sensor_type == SensorType.LIDAR &&
+        if (measurement_packet.sensor_type == SensorType.LIDAR and
            (measurement_packet.x_measured+measurement_packet.y_measured) == 0):
            measurement_packet.x_measured = 1e-4
            measurement_packet.y_measured = 1e-4

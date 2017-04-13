@@ -35,8 +35,8 @@ class ExtendedKalmanFilter:
         self.Q = np.matlib.zeros((4,4))
 
         #we can adjust these to get better accuracy
-        self.noise_ax = 5;
-	    self.noise_ay = 5;
+        self.noise_ax = 5
+        self.noise_ay = 5
 
     def set_F_and_Q(dt):
         '''

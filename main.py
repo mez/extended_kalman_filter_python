@@ -27,4 +27,6 @@ EKF style!
 '''
 for _ , raw_measurement_packet in data_packets.iterrows():
     measurement_packet = MeasurementPacket(raw_measurement_packet)
+    print(measurement_packet)
     tracker.process_measurement(measurement_packet)
+    break
