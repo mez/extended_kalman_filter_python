@@ -13,20 +13,20 @@ def polar_2_cart(ro, phi, ro_dot):
     Takes the polar coord based radar reading and convert to cart coord x,y
     return (x,y)
     '''
-    NotImplementedError
+    raise NotImplementedError
 
 def calculate_rmse(estimations, ground_truth):
     '''
     Root Mean Squared Error.
     '''
-    NotImplementedError
+    raise NotImplementedError
 
 def calculate_jacobian(state):
     '''
     Creates a Jacobian matrix from the state vector. This is a polynomial approximation of the
     funtion that maps the state vector to the polar coordinates.
     '''
-    NotImplementedError
+    raise NotImplementedError
 
 
 class SensorType(Enum):

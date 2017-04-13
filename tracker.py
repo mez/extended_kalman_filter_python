@@ -1,8 +1,5 @@
-import numpy as np
-from math import pow
 from utils import SensorType, polar_2_cart
 from ekf import ExtendedKalmanFilter
-
 
 class Tracker:
     '''
@@ -23,7 +20,9 @@ class Tracker:
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
         if (measurement_packet.sensor_type == SensorType.LIDAR and
-           (measurement_packet.x_measured+measurement_packet.y_measured) == 0):
+           (measurement_packet.x_measured+measurement_packet.y_measured) <= 1e-5):
+           #I am just picking these hoping they are stable values.
+           #will adjust if I need to!
            measurement_packet.x_measured = 1e-4
            measurement_packet.y_measured = 1e-4
 
@@ -32,11 +31,17 @@ class Tracker:
             self.__previous_timestamp = measurement_packet.timestamp
 
             if measurement_packet.sensor_type == SensorType.LIDAR:
-                self.X = np.array([measurement_packet.x_measured,measurement_packet.y_measured,0,0])
+                self.__ekf.init_state_vector(measurement_packet.x_measured,
+                                             measurement_packet.y_measured)
+
             elif measurement_packet.sensor_type == SensorType.RADAR:
                 #we have the polar space measurements; we need to transform to cart space.
-                x,y = polar2cart()
-                self.X = np.array([x,y,0,0])
+                print(measurement_packet.rhodot_measured)
+                x,y = polar_2_cart(measurement_packet.rho_measured,
+                                 measurement_packet.phi_measured,
+                                 measurement_packet.rhodot_measured)
+
+                self.__ekf.init_state_vector(x,y)
 
             self.__is_initialized = True
 
@@ -47,4 +52,6 @@ class Tracker:
         #2nd set new F and Q using new dt
         self.__ekf.set_F_and_Q(dt)
 
-        #3rd update Q with dt
+        #3rd make a prediction
+
+        #4th update prediction

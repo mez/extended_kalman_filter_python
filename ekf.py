@@ -14,13 +14,13 @@ class ExtendedKalmanFilter:
         self.X = None
         self.F = np.matrix('1, 0, 1, 0; \
                             0, 1, 0, 1; \
-			                0, 0, 1, 0; \
-			                0, 0, 0, 1')
+                            0, 0, 1, 0; \
+                            0, 0, 0, 1')
 
         self.P = np.matrix('1, 0, 0,    0; \
                             0, 1, 0,    0; \
-			                0, 0, 1000, 0; \
-			                0, 0, 0, 1000')
+                            0, 0, 1000, 0; \
+                            0, 0, 0, 1000')
 
         self.HL = np.matrix('1, 0, 0, 0; \
                              0, 1, 0, 0' )
@@ -37,6 +37,9 @@ class ExtendedKalmanFilter:
         #we can adjust these to get better accuracy
         self.noise_ax = 5
         self.noise_ay = 5
+
+    def init_state_vector(x,y):
+        self.X = np.array([x,y,0,0])
 
     def set_F_and_Q(dt):
         '''
@@ -60,10 +63,10 @@ class ExtendedKalmanFilter:
         '''
 
     def predict(self):
-        NotImplementedError
+        raise NotImplementedError
 
     def updateLidar(self):
-        NotImplementedError
+        raise NotImplementedError
 
     def updateRadar(self):
-        NotImplementedError
+        raise NotImplementedError
