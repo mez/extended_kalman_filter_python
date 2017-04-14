@@ -19,7 +19,7 @@ class Tracker:
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
         if (measurement_packet.sensor_type == SensorType.LIDAR and
-           (measurement_packet.x_measured+measurement_packet.y_measured) <= 1e-5):
+           abs(measurement_packet.x_measured+measurement_packet.y_measured) <= 1e-4):
            #I am just picking these hoping they are stable values.
            #will adjust if I need to!
            measurement_packet.x_measured = 1e-4

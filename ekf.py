@@ -2,6 +2,8 @@ import numpy as np
 import numpy.matlib
 from math import pow
 
+from utils import cart_2_polar, calculate_jacobian
+
 class ExtendedKalmanFilter:
     def __init__(self):
         '''
@@ -45,10 +47,11 @@ class ExtendedKalmanFilter:
     def current_estimate(self):
         return (self.X, self.P)
 
-    def init_state_vector(x,y):
+    def init_state_vector(self, x,y):
         self.X = np.array([x,y,0,0]).reshape((4,1))
+        print("init state: \n", self.X)
 
-    def set_F_and_Q(dt):
+    def set_F_and_Q(self, dt):
         '''
         updates the motion model and process covar based on delta time from last measurement.
         '''
@@ -70,17 +73,18 @@ class ExtendedKalmanFilter:
 			dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
 			0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
         '''
-        self.Q[0,1] = dt_4/4*self.noise_ax
-        self.Q[0,2] = dt_3/2*self.noise_ax
 
-        self.Q[1,1] = dt_4/4*self.noise_ay
-        self.Q[1,3] = dt_3/2*self.noise_ay
+        self.Q[0,1] = dt4/4*self.noise_ax
+        self.Q[0,2] = dt3/2*self.noise_ax
 
-        self.Q[2,0] = dt_3/2*self.noise_ax
-        self.Q[2,2] = dt_2*self.noise_ax
+        self.Q[1,1] = dt4/4*self.noise_ay
+        self.Q[1,3] = dt3/2*self.noise_ay
 
-        self.Q[3,1] = dt_3/2*self.noise_ay
-        self.Q[3,3] = dt_2*self.noise_ay
+        self.Q[2,0] = dt3/2*self.noise_ax
+        self.Q[2,2] = dt2*self.noise_ax
+
+        self.Q[3,1] = dt3/2*self.noise_ay
+        self.Q[3,3] = dt2*self.noise_ay
 
     def predict(self):
         '''
@@ -97,6 +101,7 @@ class ExtendedKalmanFilter:
 
         #this is the error of our prediction to the sensor readings
         y = measurement_packet.z - self.HL*self.X
+
         #pre compute for the kalman gain K
         S = self.HL * self.P * self.HL.T + self.RL
         K = self.P*self.HL.T*S.I
@@ -113,5 +118,6 @@ class ExtendedKalmanFilter:
         This is a special case as we will need a Jocabian matrix to have a linear
         approximation of the transformation function h(x)
         '''
+        y = measurement_packet.z - cart_2_polar(self.X)
 
         raise NotImplementedError

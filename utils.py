@@ -4,6 +4,20 @@ utils provides helper classes and methods.
 
 from enum import Enum
 import numpy as np
+from math import sin, cos, pi, sqrt, atan2
+
+def cart_2_polar(px,py,vx,vy):
+    '''
+    Transforms the state vector into the polar space.
+    '''
+    try:
+        ro      = sqrt(px**2 + py**2)
+        phi     = atan2(py/px)
+        ro_dot  = (px*vx + py*vy)/ro
+
+        return np.array([ro, phi, ro_dot]).reshape((3,1))
+    except ZeroDivisionError as e:
+        raise ValueError('px and py cannot be zero.') from e
 
 def polar_2_cart(ro, phi, ro_dot):
     '''
@@ -14,7 +28,8 @@ def polar_2_cart(ro, phi, ro_dot):
     Takes the polar coord based radar reading and convert to cart coord x,y
     return (x,y)
     '''
-    raise NotImplementedError
+    return (cos(phi) * ro, sin(phi) * ro)
+
 
 def calculate_rmse(estimations, ground_truth):
     '''
@@ -22,11 +37,21 @@ def calculate_rmse(estimations, ground_truth):
     '''
     raise NotImplementedError
 
-def calculate_jacobian(state):
+def calculate_jacobian(state_vector):
     '''
     Creates a Jacobian matrix from the state vector. This is a polynomial approximation of the
     funtion that maps the state vector to the polar coordinates.
+
+
+    float pxpysqroot = sqrt(px*px+py*py);
+	float term31 = pow((py*(vx*py - vy*px))/(px*px+py*py),(3/2));
+	float term32 = pow((px*(vy*px - vx*py))/(px*px+py*py),(3/2));
+
+    px/pxpysqroot     , py/pxpysqroot     , 0, 0,
+    -(py/(px*px+py*py)), (px/(px*px+py*py)), 0, 0,
+    term31, term32, px/pxpysqroot, py/pxpysqroot;
     '''
+
     raise NotImplementedError
 
 
