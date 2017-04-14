@@ -4,11 +4,12 @@ utils provides helper classes and methods.
 
 from enum import Enum
 import numpy as np
-from math import sin, cos, pi, sqrt, atan2
+import numpy.matlib
+
+from math import sin, cos, pi, sqrt, atan2, pow
 
 def state_vector_to_scalars(state_vector):
-    print("state_vector_to_scalars \n",state_vector)
-    return (state_vector[0][0],state_vector[0][1],state_vector[0][2],state_vector[0][3])
+    return (state_vector[0][0],state_vector[1][0],state_vector[2][0],state_vector[3][0])
 
 def cart_2_polar(state_vector):
     px,py,vx,vy = state_vector_to_scalars(state_vector)
@@ -18,7 +19,7 @@ def cart_2_polar(state_vector):
     '''
     try:
         ro      = sqrt(px**2 + py**2)
-        phi     = atan2(py/px)
+        phi     = atan2(py,px)
         ro_dot  = (px*vx + py*vy)/ro
 
         return np.array([ro, phi, ro_dot]).reshape((3,1))
@@ -58,10 +59,28 @@ def calculate_jacobian(state_vector):
     term31, term32, px/pxpysqroot, py/pxpysqroot;
     '''
     px,py,vx,vy = state_vector_to_scalars(state_vector)
+    Hj = np.matlib.zeros((3,4))
 
-    pxpysqroot = sqrt(px*px+py*py)
+    xy_squared_sum = px**2+py**2
+    xy_squared_sum_sqrt = sqrt(xy_squared_sum)
 
-    raise NotImplementedError
+    xvx_yvy_mul_diff = vx*py - vy*px
+
+    px_div_xy_squared_sum_sqrt = px/xy_squared_sum_sqrt
+    py_div_xy_squared_sum_sqrt = py/xy_squared_sum_sqrt
+
+    Hj[0,0] = px_div_xy_squared_sum_sqrt
+    Hj[0,1] = py_div_xy_squared_sum_sqrt
+
+    Hj[1,0] = -py/xy_squared_sum
+    Hj[1,1] = px/xy_squared_sum
+
+    Hj[2,0] = pow((py*xvx_yvy_mul_diff)/xy_squared_sum,(3/2))
+    Hj[2,1] = pow((px*xvx_yvy_mul_diff)/xy_squared_sum,(3/2))
+    Hj[2,2] = px_div_xy_squared_sum_sqrt
+    Hj[2,2] = py_div_xy_squared_sum_sqrt
+
+    return Hj
 
 
 class SensorType(Enum):
