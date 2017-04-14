@@ -49,7 +49,6 @@ class ExtendedKalmanFilter:
 
     def init_state_vector(self, x,y):
         self.X = np.array([x,y,0,0]).reshape((4,1))
-        print("init state: \n", self.X)
 
     def recompute_F_and_Q(self, dt):
         '''

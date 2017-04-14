@@ -60,4 +60,4 @@ class Tracker:
             self.__ekf.updateRadar(measurement_packet)
 
 
-        print( "current_estimate: \n",self.__ekf.current_estimate )
+        print("X_: \n {} \nP_: \n {}".format(self.__ekf.current_estimate[0].reshape((1,4)),self.__ekf.current_estimate[1]) )
