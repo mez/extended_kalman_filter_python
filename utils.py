@@ -6,18 +6,20 @@ from enum import Enum
 import numpy as np
 import numpy.matlib
 
-from math import sin, cos, pi, sqrt, atan2
+from math import sin, cos, sqrt, atan2
 
 def state_vector_to_scalars(state_vector):
+    '''
+    Returns the elements from the state_vector as a tuple of scalars.
+    '''
     return (state_vector[0][0,0],state_vector[1][0,0],state_vector[2][0,0],state_vector[3][0,0])
 
 def cart_2_polar(state_vector):
-    px,py,vx,vy = state_vector_to_scalars(state_vector)
-
     '''
     Transforms the state vector into the polar space.
     '''
     try:
+        px,py,vx,vy = state_vector_to_scalars(state_vector)
         ro      = sqrt(px**2 + py**2)
         phi     = atan2(py,px)
         ro_dot  = (px*vx + py*vy)/ro
@@ -125,7 +127,7 @@ class MeasurementPacket:
 
     def __str__(self):
         if self.sensor_type == SensorType.LIDAR:
-            return "LIDAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} {:>4}] \n  GROUND TRUTH [{:>4} {:>4} {:>4} {:>4}]".format(
+            return "LIDAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} || {:>4}] \n GROUND TRUTH [{:>4} || {:>4} || {:>4} || {:>4}]".format(
                     self.timestamp,
 
                     self.x_measured,
@@ -137,7 +139,7 @@ class MeasurementPacket:
                     self.vy_groundtruth)
 
         elif self.sensor_type == SensorType.RADAR:
-            return "RADAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} <> {:>4} <> {:>4}] \n GROUND TRUTH [{:>4} <> {:>4} <> {:>4} <> {:>4}]".format(
+            return "RADAR (timestamp: {:>8}) \n MEASUREMENT [{:>4} || {:>4} <> {:>4}] \n GROUND TRUTH [{:>4} || {:>4} || {:>4} || {:>4}]".format(
                     self.timestamp    ,
 
                     self.rho_measured,

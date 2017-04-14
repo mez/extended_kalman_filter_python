@@ -13,43 +13,43 @@ class ExtendedKalmanFilter:
         each tracker will just call to these methods with the matrices to update.
         '''
 
-        self.X = None
+        self.__X = None
         #do this once do we don't keep redoing in update step
-        self.XI = np.matlib.identity(4)
+        self.__XI = np.matlib.identity(4)
 
-        self.F = np.matrix('1, 0, 1, 0; \
+        self.__F = np.matrix('1, 0, 1, 0; \
                             0, 1, 0, 1; \
                             0, 0, 1, 0; \
                             0, 0, 0, 1')
 
-        self.P = np.matrix('1, 0, 0,    0; \
+        self.__P = np.matrix('1, 0, 0,    0; \
                             0, 1, 0,    0; \
                             0, 0, 1000, 0; \
                             0, 0, 0, 1000')
 
-        self.HL = np.matrix('1, 0, 0, 0; \
+        self.__HL = np.matrix('1, 0, 0, 0; \
                              0, 1, 0, 0' )
 
-        self.HR = np.matlib.zeros((3,4))
+        self.__HR = np.matlib.zeros((3,4))
 
-        self.RL = np.matrix('0.0225, 0; \
+        self.__RL = np.matrix('0.0225, 0; \
                              0,      0.0225')
-        self.RR = np.matrix('0.09, 0,      0; \
+        self.__RR = np.matrix('0.09, 0,      0; \
                              0,    0.0009, 0; \
                              0,    0,      0.09')
 
-        self.Q = np.matlib.zeros((4,4))
+        self.__Q = np.matlib.zeros((4,4))
 
         #we can adjust these to get better accuracy
-        self.noise_ax = 9
-        self.noise_ay = 9
+        self.__noise_ax = 9
+        self.__noise_ay = 9
 
     @property
     def current_estimate(self):
-        return (self.X, self.P)
+        return (self.__X, self.__P)
 
     def init_state_vector(self, x,y):
-        self.X = np.array([x,y,0,0]).reshape((4,1))
+        self.__X = np.array([x,y,0,0]).reshape((4,1))
 
     def recompute_F_and_Q(self, dt):
         '''
@@ -57,8 +57,8 @@ class ExtendedKalmanFilter:
         '''
 
         #set F
-        self.F[0,2] = dt
-        self.F[1,3] = dt
+        self.__F[0,2] = dt
+        self.__F[1,3] = dt
 
         #set Q
         dt2 = pow(dt, 2)
@@ -74,30 +74,30 @@ class ExtendedKalmanFilter:
 			0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
         '''
 
-        self.Q[0,1] = dt4/4*self.noise_ax
-        self.Q[0,2] = dt3/2*self.noise_ax
+        self.__Q[0,1] = dt4/4*self.__noise_ax
+        self.__Q[0,2] = dt3/2*self.__noise_ax
 
-        self.Q[1,1] = dt4/4*self.noise_ay
-        self.Q[1,3] = dt3/2*self.noise_ay
+        self.__Q[1,1] = dt4/4*self.__noise_ay
+        self.__Q[1,3] = dt3/2*self.__noise_ay
 
-        self.Q[2,0] = dt3/2*self.noise_ax
-        self.Q[2,2] = dt2*self.noise_ax
+        self.__Q[2,0] = dt3/2*self.__noise_ax
+        self.__Q[2,2] = dt2*self.__noise_ax
 
-        self.Q[3,1] = dt3/2*self.noise_ay
-        self.Q[3,3] = dt2*self.noise_ay
+        self.__Q[3,1] = dt3/2*self.__noise_ay
+        self.__Q[3,3] = dt2*self.__noise_ay
 
     def recompute_HR(self):
         '''
         calculate_jacobian of the current state.
         '''
-        self.HR = calculate_jacobian(self.X)
+        self.__HR = calculate_jacobian(self.__X)
 
     def predict(self):
         '''
         This is a projection step. we predict into the future.
         '''
-        self.X = self.F * self.X
-        self.P = (self.F * self.P * self.F.T) + self.Q
+        self.__X = self.__F * self.__X
+        self.__P = (self.__F * self.__P * self.__F.T) + self.__Q
 
     def updateLidar(self,measurement_packet):
         '''
@@ -106,15 +106,15 @@ class ExtendedKalmanFilter:
         '''
 
         #this is the error of our prediction to the sensor readings
-        y = measurement_packet.z - self.HL*self.X
+        y = measurement_packet.z - self.__HL*self.__X
 
         #pre compute for the kalman gain K
-        S = self.HL * self.P * self.HL.T + self.RL
-        K = self.P*self.HL.T*S.I
+        S = self.__HL * self.__P * self.__HL.T + self.__RL
+        K = self.__P*self.__HL.T*S.I
 
         #now we update our prediction using the error and kalman gain.
-        self.X += K*y
-        self.P = (self.XI - K*self.HL) * self.P
+        self.__X += K*y
+        self.__P = (self.__XI - K*self.__HL) * self.__P
 
     def updateRadar(self,measurement_packet):
         '''
@@ -126,16 +126,16 @@ class ExtendedKalmanFilter:
         '''
 
         #TODO: make sure the phi in y is -pi <= phi <= pi
-        y = measurement_packet.z - cart_2_polar(self.X)
-        
+        y = measurement_packet.z - cart_2_polar(self.__X)
+
         #recompute Jacobian
         self.recompute_HR()
 
         #pre compute for the kalman gain K
         #TODO: this code is not DRY should refactor here.
-        S = self.HR * self.P * self.HR.T + self.RR
-        K = self.P*self.HR.T*S.I
+        S = self.__HR * self.__P * self.__HR.T + self.__RR
+        K = self.__P*self.__HR.T*S.I
 
         #now we update our prediction using the error and kalman gain.
-        self.X += K*y
-        self.P = (self.XI - K*self.HR) * self.P
+        self.__X += K*y
+        self.__P = (self.__XI - K*self.__HR) * self.__P
