@@ -48,7 +48,7 @@ class Tracker:
         self.__previous_timestamp = measurement_packet.timestamp
 
         #2nd set new F and Q using new dt
-        self.__ekf.set_F_and_Q(dt)
+        self.__ekf.recompute_F_and_Q(dt)
 
         #3rd make a prediction
         self.__ekf.predict()

@@ -6,7 +6,13 @@ from enum import Enum
 import numpy as np
 from math import sin, cos, pi, sqrt, atan2
 
-def cart_2_polar(px,py,vx,vy):
+def state_vector_to_scalars(state_vector):
+    print("state_vector_to_scalars \n",state_vector)
+    return (state_vector[0][0],state_vector[0][1],state_vector[0][2],state_vector[0][3])
+
+def cart_2_polar(state_vector):
+    px,py,vx,vy = state_vector_to_scalars(state_vector)
+
     '''
     Transforms the state vector into the polar space.
     '''
@@ -51,6 +57,9 @@ def calculate_jacobian(state_vector):
     -(py/(px*px+py*py)), (px/(px*px+py*py)), 0, 0,
     term31, term32, px/pxpysqroot, py/pxpysqroot;
     '''
+    px,py,vx,vy = state_vector_to_scalars(state_vector)
+
+    pxpysqroot = sqrt(px*px+py*py)
 
     raise NotImplementedError
 
@@ -100,9 +109,9 @@ class MeasurementPacket:
         Returns a vectorized version of the measurement for EKF typically called z.
         '''
         if self.sensor_type == SensorType.LIDAR:
-            return nd.array([self.x_measured,self.y_measured]).reshape((2,1))
+            return np.array([self.x_measured,self.y_measured]).reshape((2,1))
         elif self.sensor_type == SensorType.RADAR:
-            return nd.array([self.rho_measured,self.phi_measured,self.rhodot_measured]).reshape((3,1))
+            return np.array([self.rho_measured,self.phi_measured,self.rhodot_measured]).reshape((3,1))
 
     def __str__(self):
         if self.sensor_type == SensorType.LIDAR:

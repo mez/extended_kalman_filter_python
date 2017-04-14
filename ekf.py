@@ -51,7 +51,7 @@ class ExtendedKalmanFilter:
         self.X = np.array([x,y,0,0]).reshape((4,1))
         print("init state: \n", self.X)
 
-    def set_F_and_Q(self, dt):
+    def recompute_F_and_Q(self, dt):
         '''
         updates the motion model and process covar based on delta time from last measurement.
         '''
@@ -86,6 +86,12 @@ class ExtendedKalmanFilter:
         self.Q[3,1] = dt3/2*self.noise_ay
         self.Q[3,3] = dt2*self.noise_ay
 
+    def recompute_HR(self):
+        '''
+        calculate_jacobian of the current state.
+        '''
+        self.HR = calculate_jacobian(self.X)
+
     def predict(self):
         '''
         This is a projection step. we predict into the future.
@@ -118,6 +124,18 @@ class ExtendedKalmanFilter:
         This is a special case as we will need a Jocabian matrix to have a linear
         approximation of the transformation function h(x)
         '''
+
+        #TODO: make sure the phi in y is -pi <= phi <= pi
         y = measurement_packet.z - cart_2_polar(self.X)
 
-        raise NotImplementedError
+        #recompute Jacobian
+        self.recompute_HR()
+
+        #pre compute for the kalman gain K
+        #TODO: this code is not DRY should refactor here.
+        S = self.HR * self.P * self.HR.T + self.RR
+        K = self.P*self.HR.T*S.I
+
+        #now we update our prediction using the error and kalman gain.
+        self.X += K*y
+        self.P = (self.XI - K*self.HR) * self.P
