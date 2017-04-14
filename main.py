@@ -25,8 +25,12 @@ tracker = Tracker()
 This is the main loop that updates and tracks the objects.
 EKF style!
 '''
+n = 0
 for _ , raw_measurement_packet in data_packets.iterrows():
     measurement_packet = MeasurementPacket(raw_measurement_packet)
     print(measurement_packet)
     tracker.process_measurement(measurement_packet)
-    break
+    n+=1
+
+    if n == 10:
+        break

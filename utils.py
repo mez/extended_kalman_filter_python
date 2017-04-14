@@ -6,10 +6,10 @@ from enum import Enum
 import numpy as np
 import numpy.matlib
 
-from math import sin, cos, pi, sqrt, atan2, pow
+from math import sin, cos, pi, sqrt, atan2
 
 def state_vector_to_scalars(state_vector):
-    return (state_vector[0][0],state_vector[1][0],state_vector[2][0],state_vector[3][0])
+    return (state_vector[0][0,0],state_vector[1][0,0],state_vector[2][0,0],state_vector[3][0,0])
 
 def cart_2_polar(state_vector):
     px,py,vx,vy = state_vector_to_scalars(state_vector)
@@ -48,37 +48,28 @@ def calculate_jacobian(state_vector):
     '''
     Creates a Jacobian matrix from the state vector. This is a polynomial approximation of the
     funtion that maps the state vector to the polar coordinates.
-
-
-    float pxpysqroot = sqrt(px*px+py*py);
-	float term31 = pow((py*(vx*py - vy*px))/(px*px+py*py),(3/2));
-	float term32 = pow((px*(vy*px - vx*py))/(px*px+py*py),(3/2));
-
-    px/pxpysqroot     , py/pxpysqroot     , 0, 0,
-    -(py/(px*px+py*py)), (px/(px*px+py*py)), 0, 0,
-    term31, term32, px/pxpysqroot, py/pxpysqroot;
     '''
+
     px,py,vx,vy = state_vector_to_scalars(state_vector)
     Hj = np.matlib.zeros((3,4))
 
-    xy_squared_sum = px**2+py**2
-    xy_squared_sum_sqrt = sqrt(xy_squared_sum)
+    c1 = px**2+py**2
+    c2 = sqrt(c1)
+    c3 = (c1*c2)
 
-    xvx_yvy_mul_diff = vx*py - vy*px
+    if c1 < 1e-4:
+        raise ValueError("calculate_jacobian - Error - Division by Zero")
 
-    px_div_xy_squared_sum_sqrt = px/xy_squared_sum_sqrt
-    py_div_xy_squared_sum_sqrt = py/xy_squared_sum_sqrt
+    Hj[0,0] = px/c2
+    Hj[0,1] = py/c2
 
-    Hj[0,0] = px_div_xy_squared_sum_sqrt
-    Hj[0,1] = py_div_xy_squared_sum_sqrt
+    Hj[1,0] = -(py/c1)
+    Hj[1,1] = (px/c1)
 
-    Hj[1,0] = -py/xy_squared_sum
-    Hj[1,1] = px/xy_squared_sum
-
-    Hj[2,0] = pow((py*xvx_yvy_mul_diff)/xy_squared_sum,(3/2))
-    Hj[2,1] = pow((px*xvx_yvy_mul_diff)/xy_squared_sum,(3/2))
-    Hj[2,2] = px_div_xy_squared_sum_sqrt
-    Hj[2,2] = py_div_xy_squared_sum_sqrt
+    Hj[2,0] = py*(vx*py - vy*px)/c3
+    Hj[2,1] = px*(px*vy - py*vx)/c3
+    Hj[2,2] = px/c2
+    Hj[2,2] = py/c2
 
     return Hj
 

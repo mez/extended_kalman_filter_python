@@ -29,7 +29,8 @@ class ExtendedKalmanFilter:
 
         self.HL = np.matrix('1, 0, 0, 0; \
                              0, 1, 0, 0' )
-        self.HR = None
+
+        self.HR = np.matlib.zeros((3,4))
 
         self.RL = np.matrix('0.0225, 0; \
                              0,      0.0225')
@@ -126,7 +127,7 @@ class ExtendedKalmanFilter:
 
         #TODO: make sure the phi in y is -pi <= phi <= pi
         y = measurement_packet.z - cart_2_polar(self.X)
-
+        
         #recompute Jacobian
         self.recompute_HR()
 
