@@ -41,15 +41,15 @@ class ExtendedKalmanFilter:
         self.__Q = np.matlib.zeros((4,4))
 
         #we can adjust these to get better accuracy
-        self.__noise_ax = 5
-        self.__noise_ay = 5
+        self.__noise_ax = 9
+        self.__noise_ay = 9
 
     @property
     def current_estimate(self):
         return (self.__X, self.__P)
 
-    def init_state_vector(self, x,y):
-        self.__X = np.array([x,y,0,0]).reshape((4,1))
+    def init_state_vector(self, x,y, vx, vy):
+        self.__X = np.array([x,y,vx,vy]).reshape((4,1))
 
     def recompute_F_and_Q(self, dt):
         '''

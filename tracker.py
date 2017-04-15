@@ -36,17 +36,19 @@ class Tracker:
 
             if measurement_packet.sensor_type == SensorType.LIDAR:
                 self.__ekf.init_state_vector(measurement_packet.x_measured,
-                                             measurement_packet.y_measured)
+                                             measurement_packet.y_measured, 0, 0)
 
             elif measurement_packet.sensor_type == SensorType.RADAR:
                 #we have the polar space measurements; we need to transform to cart space.
-                x,y = polar_2_cart(measurement_packet.rho_measured,
+                x,y, vx, vy = polar_2_cart(measurement_packet.rho_measured,
                                  measurement_packet.phi_measured,
                                  measurement_packet.rhodot_measured)
 
-                self.__ekf.init_state_vector(x,y)
+                self.__ekf.init_state_vector(x,y, vx, vy)
 
             self.__is_initialized = True
+
+
 
         #1st we calculate how much time has passed since our last measurement_packet in seconds
         dt =( measurement_packet.timestamp - self.__previous_timestamp) / 1000000.0
@@ -63,6 +65,3 @@ class Tracker:
             self.__ekf.updateLidar(measurement_packet)
         elif measurement_packet.sensor_type == SensorType.RADAR:
             self.__ekf.updateRadar(measurement_packet)
-
-
-        # print("X_: \n {} \nP_: \n {}".format(self.__ekf.current_estimate[0].reshape((1,4)),self.__ekf.current_estimate[1]) )

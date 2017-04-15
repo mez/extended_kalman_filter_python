@@ -18,15 +18,17 @@ def cart_2_polar(state_vector):
     '''
     Transforms the state vector into the polar space.
     '''
-    try:
-        px,py,vx,vy = state_vector_to_scalars(state_vector)
-        ro      = sqrt(px**2 + py**2)
-        phi     = atan2(py,px)
-        ro_dot  = (px*vx + py*vy)/ro
 
-        return np.array([ro, phi, ro_dot]).reshape((3,1))
-    except ZeroDivisionError as e:
-        raise ValueError('px and py cannot be zero.') from e
+    px,py,vx,vy = state_vector_to_scalars(state_vector)
+    ro      = sqrt(px**2 + py**2)
+
+    if ro < 1e-4:
+        raise ValueError('cart_2_polar() - Error - px and py are nearing zero.')
+
+    phi     = atan2(py,px)
+    ro_dot  = (px*vx + py*vy)/ro
+
+    return np.array([ro, phi, ro_dot]).reshape((3,1))
 
 def polar_2_cart(ro, phi, ro_dot):
     '''
@@ -37,7 +39,7 @@ def polar_2_cart(ro, phi, ro_dot):
     Takes the polar coord based radar reading and convert to cart coord x,y
     return (x,y)
     '''
-    return (cos(phi) * ro, sin(phi) * ro)
+    return (cos(phi) * ro, sin(phi) * ro, ro_dot * cos(phi) , ro_dot * sin(phi))
 
 def passing_rmse(rmse, metric):
     print("Metric: ", metric)
