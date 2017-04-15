@@ -19,7 +19,7 @@ class Tracker:
 
     @property
     def state(self):
-        return np.asarray(self.__ekf.current_estimate[0])
+        return self.__ekf.current_estimate[0]
 
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
@@ -32,7 +32,7 @@ class Tracker:
 
         # if this is first measurement_packet, then setup state vector.
         if not self.__is_initialized:
-            self.__previous_timestamp = measurement_packet.timestamp
+
 
             if measurement_packet.sensor_type == SensorType.LIDAR:
                 self.__ekf.init_state_vector(measurement_packet.x_measured,
@@ -46,8 +46,9 @@ class Tracker:
 
                 self.__ekf.init_state_vector(x,y, vx, vy)
 
+            self.__previous_timestamp = measurement_packet.timestamp
             self.__is_initialized = True
-
+            return
 
 
         #1st we calculate how much time has passed since our last measurement_packet in seconds

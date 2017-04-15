@@ -22,13 +22,10 @@ def cart_2_polar(state_vector):
     px,py,vx,vy = state_vector_to_scalars(state_vector)
     ro      = sqrt(px**2 + py**2)
 
-    if ro < 1e-4:
-        raise ValueError('cart_2_polar() - Error - px and py are nearing zero.')
-
     phi     = atan2(py,px)
     ro_dot  = (px*vx + py*vy)/ro
 
-    return np.array([ro, phi, ro_dot]).reshape((3,1))
+    return np.matrix([ro, phi, ro_dot]).T
 
 def polar_2_cart(ro, phi, ro_dot):
     '''
@@ -43,8 +40,8 @@ def polar_2_cart(ro, phi, ro_dot):
 
 def passing_rmse(rmse, metric):
     print("Metric: ", metric)
-    for index, (error, threshold) in enumerate(zip(rmse, metric)):
-        if error > threshold:
+    for index, threshold in enumerate(metric):
+        if rmse[0,index] > threshold:
             print("RMSE FAILED metric @ index ", index)
             return False
 
@@ -58,17 +55,13 @@ def calculate_rmse(estimations, ground_truth):
     if len(estimations) != len(ground_truth) or len(estimations) == 0:
         raise ValueError('calculate_rmse () - Error - estimations and ground_truth must match in length.')
 
-    rmse = np.array([0.,0.,0.,0.]).reshape((4,1))
-    for est, gt in zip(estimations, ground_truth):
-        residual = est - gt
-        residual = residual**2
+    rmse = np.matrix([0.,0.,0.,0.]).T
 
-        rmse += residual
+    for est, gt in zip(estimations, ground_truth):
+        rmse += np.square(est - gt)
 
     rmse /= len(estimations)
-
-    rmse = np.sqrt(rmse)
-    return rmse
+    return np.sqrt(rmse)
 
 def calculate_jacobian(state_vector):
     '''
@@ -87,8 +80,8 @@ def calculate_jacobian(state_vector):
 
     if pxpy_squared < 1e-4:
         return Hj
+        # pxpy_squared = 1e-4;
         # raise ValueError("calculate_jacobian - Error - Division by Zero")
-
 
     Hj[0,0] = px/pxpy_squared_sqrt
     Hj[0,1] = py/pxpy_squared_sqrt
@@ -147,16 +140,16 @@ class MeasurementPacket:
         Returns a vectorized version of the measurement for EKF typically called z.
         '''
         if self.sensor_type == SensorType.LIDAR:
-            return np.array([self.x_measured,self.y_measured]).reshape((2,1))
+            return np.matrix([[self.x_measured,self.y_measured]]).T
         elif self.sensor_type == SensorType.RADAR:
-            return np.array([self.rho_measured,self.phi_measured,self.rhodot_measured]).reshape((3,1))
+            return np.matrix([[self.rho_measured,self.phi_measured,self.rhodot_measured]]).T
 
     @property
     def ground_truth(self):
-        return np.array([self.x_groundtruth,
+        return np.matrix([[self.x_groundtruth,
                          self.y_groundtruth,
                          self.vx_groundtruth,
-                         self.vy_groundtruth]).reshape((4,1))
+                         self.vy_groundtruth]]).T
 
     def __str__(self):
         if self.sensor_type == SensorType.LIDAR:
