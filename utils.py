@@ -44,34 +44,42 @@ def calculate_rmse(estimations, ground_truth):
     '''
     Root Mean Squared Error.
     '''
+    if len(estimations) != len(ground_truth) or len(estimations) == 0:
+        raise ValueError('calculate_rmse () - Error - estimations and ground_truth must match in length.')
+
+
     raise NotImplementedError
 
 def calculate_jacobian(state_vector):
     '''
     Creates a Jacobian matrix from the state vector. This is a polynomial approximation of the
     funtion that maps the state vector to the polar coordinates.
+
+    TODO: perhaps just move this into the recompute_HR in ExtendedKalmanFilter class.
     '''
 
     px,py,vx,vy = state_vector_to_scalars(state_vector)
     Hj = np.matlib.zeros((3,4))
 
-    c1 = px**2+py**2
-    c2 = sqrt(c1)
-    c3 = (c1*c2)
+    pxpy_squared = px**2+py**2
+    pxpy_squared_sqrt = sqrt(pxpy_squared)
+    pxpy_cubed = (pxpy_squared*pxpy_squared_sqrt)
 
-    if c1 < 1e-4:
-        raise ValueError("calculate_jacobian - Error - Division by Zero")
+    if pxpy_squared < 1e-4:
+        return Hj
+        # raise ValueError("calculate_jacobian - Error - Division by Zero")
 
-    Hj[0,0] = px/c2
-    Hj[0,1] = py/c2
 
-    Hj[1,0] = -(py/c1)
-    Hj[1,1] = (px/c1)
+    Hj[0,0] = px/pxpy_squared_sqrt
+    Hj[0,1] = py/pxpy_squared_sqrt
 
-    Hj[2,0] = py*(vx*py - vy*px)/c3
-    Hj[2,1] = px*(px*vy - py*vx)/c3
-    Hj[2,2] = px/c2
-    Hj[2,2] = py/c2
+    Hj[1,0] = -(py/pxpy_squared)
+    Hj[1,1] = (px/pxpy_squared)
+
+    Hj[2,0] = py*(vx*py - vy*px)/pxpy_cubed
+    Hj[2,1] = px*(px*vy - py*vx)/pxpy_cubed
+    Hj[2,2] = px/pxpy_squared_sqrt
+    Hj[2,2] = py/pxpy_squared_sqrt
 
     return Hj
 
@@ -124,6 +132,13 @@ class MeasurementPacket:
             return np.array([self.x_measured,self.y_measured]).reshape((2,1))
         elif self.sensor_type == SensorType.RADAR:
             return np.array([self.rho_measured,self.phi_measured,self.rhodot_measured]).reshape((3,1))
+
+    @property
+    def ground_truth(self):
+        return np.array([self.x_groundtruth,
+                         self.y_groundtruth,
+                         self.vx_groundtruth,
+                         self.vy_groundtruth]).reshape((4,1))
 
     def __str__(self):
         if self.sensor_type == SensorType.LIDAR:

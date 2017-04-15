@@ -16,6 +16,10 @@ class Tracker:
         self.__is_initialized = False
         self.__previous_timestamp = 0.
 
+    @property
+    def state(self):
+        return self.__ekf.current_estimate[0]
+
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.
         if (measurement_packet.sensor_type == SensorType.LIDAR and
@@ -60,4 +64,4 @@ class Tracker:
             self.__ekf.updateRadar(measurement_packet)
 
 
-        print("X_: \n {} \nP_: \n {}".format(self.__ekf.current_estimate[0].reshape((1,4)),self.__ekf.current_estimate[1]) )
+        # print("X_: \n {} \nP_: \n {}".format(self.__ekf.current_estimate[0].reshape((1,4)),self.__ekf.current_estimate[1]) )

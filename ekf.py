@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.matlib
-from math import pow
+from math import pow, pi
 
 from utils import cart_2_polar, calculate_jacobian
 
@@ -41,8 +41,8 @@ class ExtendedKalmanFilter:
         self.__Q = np.matlib.zeros((4,4))
 
         #we can adjust these to get better accuracy
-        self.__noise_ax = 9
-        self.__noise_ay = 9
+        self.__noise_ax = 5
+        self.__noise_ay = 5
 
     @property
     def current_estimate(self):
@@ -108,6 +108,10 @@ class ExtendedKalmanFilter:
         #this is the error of our prediction to the sensor readings
         y = measurement_packet.z - self.__HL*self.__X
 
+
+        # while ( > M_PI) a -= 2.*M_PI;
+        # while (a < -M_PI) a += 2.*M_PI;
+
         #pre compute for the kalman gain K
         S = self.__HL * self.__P * self.__HL.T + self.__RL
         K = self.__P*self.__HL.T*S.I
@@ -125,8 +129,11 @@ class ExtendedKalmanFilter:
         approximation of the transformation function h(x)
         '''
 
-        #TODO: make sure the phi in y is -pi <= phi <= pi
+
         y = measurement_packet.z - cart_2_polar(self.__X)
+        #make sure the phi in y is -pi <= phi <= pi
+        while (y[1] > pi): y[1] -= 2.*pi
+        while (y[1] < -pi): y[1] += 2.*pi
 
         #recompute Jacobian
         self.recompute_HR()
