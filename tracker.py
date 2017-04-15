@@ -1,5 +1,6 @@
 from utils import SensorType, polar_2_cart
 from ekf import ExtendedKalmanFilter
+import numpy as np
 
 class Tracker:
     '''
@@ -18,7 +19,7 @@ class Tracker:
 
     @property
     def state(self):
-        return self.__ekf.current_estimate[0]
+        return np.asarray(self.__ekf.current_estimate[0])
 
     def process_measurement(self,measurement_packet):
         # if lidar and x,y are zero then I set them to small values.

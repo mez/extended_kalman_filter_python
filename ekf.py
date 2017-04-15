@@ -108,10 +108,6 @@ class ExtendedKalmanFilter:
         #this is the error of our prediction to the sensor readings
         y = measurement_packet.z - self.__HL*self.__X
 
-
-        # while ( > M_PI) a -= 2.*M_PI;
-        # while (a < -M_PI) a += 2.*M_PI;
-
         #pre compute for the kalman gain K
         S = self.__HL * self.__P * self.__HL.T + self.__RL
         K = self.__P*self.__HL.T*S.I
@@ -128,7 +124,6 @@ class ExtendedKalmanFilter:
         This is a special case as we will need a Jocabian matrix to have a linear
         approximation of the transformation function h(x)
         '''
-
 
         y = measurement_packet.z - cart_2_polar(self.__X)
         #make sure the phi in y is -pi <= phi <= pi

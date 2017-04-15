@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import MeasurementPacket
+from utils import MeasurementPacket, calculate_rmse, passing_rmse
 from tracker import Tracker
 
 '''
@@ -26,8 +26,19 @@ This is the main loop that updates and tracks the objects.
 EKF style!
 '''
 
+estimations = []
+ground_truth = []
+
 for _ , raw_measurement_packet in data_packets.iterrows():
     measurement_packet = MeasurementPacket(raw_measurement_packet)
-    print("ground_truth: \n",measurement_packet.ground_truth)
+    ground_truth.append(measurement_packet.ground_truth)
     tracker.process_measurement(measurement_packet)
-    print("estimations: \n",repr(tracker.state))
+    estimations.append(tracker.state)
+
+print("estimations count: ", len(estimations))
+print("ground_truth count: ", len(ground_truth))
+
+rmse = calculate_rmse(estimations, ground_truth).flatten()
+print("RMSE: ", rmse)
+#check if we passed metric for data1 log file.
+passing_rmse(rmse, [0.08, 0.08, 0.60, 0.60])

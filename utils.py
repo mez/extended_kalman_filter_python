@@ -39,6 +39,15 @@ def polar_2_cart(ro, phi, ro_dot):
     '''
     return (cos(phi) * ro, sin(phi) * ro)
 
+def passing_rmse(rmse, metric):
+    print("Metric: ", metric)
+    for index, (error, threshold) in enumerate(zip(rmse, metric)):
+        if error > threshold:
+            print("RMSE FAILED metric @ index ", index)
+            return False
+
+    print("RMSE PASSED metric")
+    return True
 
 def calculate_rmse(estimations, ground_truth):
     '''
@@ -47,8 +56,17 @@ def calculate_rmse(estimations, ground_truth):
     if len(estimations) != len(ground_truth) or len(estimations) == 0:
         raise ValueError('calculate_rmse () - Error - estimations and ground_truth must match in length.')
 
+    rmse = np.array([0.,0.,0.,0.]).reshape((4,1))
+    for est, gt in zip(estimations, ground_truth):
+        residual = est - gt
+        residual = residual**2
 
-    raise NotImplementedError
+        rmse += residual
+
+    rmse /= len(estimations)
+
+    rmse = np.sqrt(rmse)
+    return rmse
 
 def calculate_jacobian(state_vector):
     '''
@@ -83,14 +101,12 @@ def calculate_jacobian(state_vector):
 
     return Hj
 
-
 class SensorType(Enum):
     '''
     Enum types for the sensors. Future sensors would be added here.
     '''
     LIDAR = 'L'
     RADAR = 'R'
-
 
 class MeasurementPacket:
     '''
