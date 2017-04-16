@@ -2,7 +2,7 @@ import numpy as np
 import numpy.matlib
 from math import pow, pi, sqrt
 
-from utils import cart_2_polar, calculate_jacobian, state_vector_to_scalars
+from utils import cart_2_polar, state_vector_to_scalars
 
 class ExtendedKalmanFilter:
     def __init__(self):
