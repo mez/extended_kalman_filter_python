@@ -22,21 +22,11 @@ class Tracker:
         return self.__ekf.current_estimate[0]
 
     def process_measurement(self,measurement_packet):
-        # if lidar and x,y are zero then I set them to small values.
-        if (measurement_packet.sensor_type == SensorType.LIDAR and
-           abs(measurement_packet.x_measured+measurement_packet.y_measured) <= 1e-4):
-           #I am just picking these hoping they are stable values.
-           #will adjust if I need to!
-           measurement_packet.x_measured = 1e-4
-           measurement_packet.y_measured = 1e-4
-
         # if this is first measurement_packet, then setup state vector.
         if not self.__is_initialized:
-
-
+            x, y, vx, vy = 0,0,0,0
             if measurement_packet.sensor_type == SensorType.LIDAR:
-                self.__ekf.init_state_vector(measurement_packet.x_measured,
-                                             measurement_packet.y_measured, 0, 0)
+                x, y, vx, vy = measurement_packet.x_measured,measurement_packet.y_measured,0,0
 
             elif measurement_packet.sensor_type == SensorType.RADAR:
                 #we have the polar space measurements; we need to transform to cart space.
@@ -44,8 +34,11 @@ class Tracker:
                                  measurement_packet.phi_measured,
                                  measurement_packet.rhodot_measured)
 
-                self.__ekf.init_state_vector(x,y, vx, vy)
+            if abs(x+y) <= 1e-4:
+                x = 1e-4
+                y = 1e-4
 
+            self.__ekf.init_state_vector(x,y, vx, vy)
             self.__previous_timestamp = measurement_packet.timestamp
             self.__is_initialized = True
             return

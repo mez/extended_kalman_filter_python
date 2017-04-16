@@ -80,9 +80,7 @@ def calculate_jacobian(state_vector):
 
     if pxpy_squared < 1e-4:
         return Hj
-        # pxpy_squared = 1e-4;
-        # raise ValueError("calculate_jacobian - Error - Division by Zero")
-
+        
     Hj[0,0] = px/pxpy_squared_sqrt
     Hj[0,1] = py/pxpy_squared_sqrt
 

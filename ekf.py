@@ -61,18 +61,9 @@ class ExtendedKalmanFilter:
         self.__F[1,3] = dt
 
         #set Q
-        dt2 = pow(dt, 2)
-        dt3 = pow(dt, 3)
-        dt4 = pow(dt, 4)
-
-        '''
-            For now we will take the process noise as the following matrix.
-
-            dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
-			0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
-			dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
-			0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
-        '''
+        dt2 = dt**2
+        dt3 = dt**3
+        dt4 = dt**4
 
         self.__Q[0,1] = dt4/4*self.__noise_ax
         self.__Q[0,2] = dt3/2*self.__noise_ax
