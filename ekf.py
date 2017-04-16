@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.matlib
-from math import pow, pi, sqrt
+from math import pi, sqrt
 
 from utils import cart_2_polar, state_vector_to_scalars
 

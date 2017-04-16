@@ -2,9 +2,7 @@ import pandas as pd
 from utils import MeasurementPacket, calculate_rmse, passing_rmse
 from tracker import Tracker
 
-
 def runTracker(data_path):
-
     '''
     This is simulating our sensors data stream.
 
@@ -30,33 +28,35 @@ def runTracker(data_path):
     '''
 
     estimations = []
-    ground_truth = []
+    measurements = []
 
     for _ , raw_measurement_packet in data_packets.iterrows():
         measurement_packet = MeasurementPacket(raw_measurement_packet)
-        ground_truth.append(measurement_packet.ground_truth)
+        measurements.append(measurement_packet)
         tracker.process_measurement(measurement_packet)
         estimations.append(tracker.state)
 
-    return estimations, ground_truth
-
-print("Started Tracker for sample-laser-radar-measurement-data-1.txt")
-estimations, ground_truth = runTracker('./data/sample-laser-radar-measurement-data-1.txt')
-print("estimations count: ", len(estimations))
-print("ground_truth count: ", len(ground_truth))
-
-rmse = calculate_rmse(estimations, ground_truth).flatten()
-print("RMSE: ", rmse)
-#check if we passed metric for data1 log file.
-passing_rmse(rmse, [0.08, 0.08, 0.60, 0.60])
+    return estimations, measurements
 
 
-print("\n\nStarted Tracker for sample-laser-radar-measurement-data-2.txt")
-estimations, ground_truth = runTracker('./data/sample-laser-radar-measurement-data-2.txt')
-print("estimations count: ", len(estimations))
-print("ground_truth count: ", len(ground_truth))
+if __name__ == '__main__':
+    print("Started Tracker for sample-laser-radar-measurement-data-1.txt")
+    estimations, measurements = runTracker('./data/sample-laser-radar-measurement-data-1.txt')
+    print("estimations count: ", len(estimations))
+    print("measurements count: ", len(measurements))
 
-rmse = calculate_rmse(estimations, ground_truth).flatten()
-print("RMSE: ", rmse)
-#check if we passed metric for data2 log file.
-passing_rmse(rmse, [0.20, 0.20, .50, .85])
+    rmse = calculate_rmse(estimations, [m.ground_truth for m in measurements]).flatten()
+    print("RMSE: ", rmse)
+    #check if we passed metric for data1 log file.
+    passing_rmse(rmse, [0.08, 0.08, 0.60, 0.60])
+
+
+    print("\n\nStarted Tracker for sample-laser-radar-measurement-data-2.txt")
+    estimations, measurements = runTracker('./data/sample-laser-radar-measurement-data-2.txt')
+    print("estimations count: ", len(estimations))
+    print("measurements count: ", len(measurements))
+
+    rmse = calculate_rmse(estimations, [m.ground_truth for m in measurements]).flatten()
+    print("RMSE: ", rmse)
+    #check if we passed metric for data2 log file.
+    passing_rmse(rmse, [0.20, 0.20, .50, .85])
