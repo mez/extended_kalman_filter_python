@@ -1,5 +1,13 @@
 # extended_kalman_filter_python
-Python implementation of an Extended Kalman Filter.
+An Extended Kalman Filter (that uses a constant velocity model) in Python.
+This EKF fuses LIDAR and RADAR sensor readings to estimate location (x,y) and velocity (vx, vy).
+
+### Source layout
+
+1. `main.py` - Can run the tracker.
+2. `tracker.py` - Instance that tracks and uses EKF to predict and update state.
+3. `efk.py` - EKF implementation lives here.
+4. `utils.py` - Helper methods.
 
 ### Package requirements
 
