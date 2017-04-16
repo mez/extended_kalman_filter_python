@@ -1,8 +1,8 @@
 import numpy as np
 import numpy.matlib
-from math import pow, pi
+from math import pow, pi, sqrt
 
-from utils import cart_2_polar, calculate_jacobian
+from utils import cart_2_polar, calculate_jacobian, state_vector_to_scalars
 
 class ExtendedKalmanFilter:
     def __init__(self):
@@ -13,32 +13,29 @@ class ExtendedKalmanFilter:
         each tracker will just call to these methods with the matrices to update.
         '''
 
-        self.__x = None
         #do this once do we don't keep redoing in update step
         self.__xI = np.matlib.identity(4)
 
-        self.__F = np.matrix('1, 0, 1, 0; \
-                            0, 1, 0, 1; \
-                            0, 0, 1, 0; \
-                            0, 0, 0, 1')
+        self.__x = None
+        self.__F = None
+        self.__Q = None
 
-        self.__P = np.matrix('1, 0, 0,    0; \
-                            0, 1, 0,    0; \
-                            0, 0, 1000, 0; \
-                            0, 0, 0, 1000')
+        self.__P = np.matrix([[1,0,0,0],
+                              [0,1,0,0],
+                              [0,0,1000,0],
+                              [0,0,0,1000]])
 
-        self.__HL = np.matrix('1, 0, 0, 0; \
-                             0, 1, 0, 0' )
+        self.__HL = np.matrix([[1,0,0,0],
+                               [0,1,0,0]])
 
         self.__HR = np.matlib.zeros((3,4))
 
-        self.__RL = np.matrix('0.0225, 0; \
-                             0,      0.0225')
-        self.__RR = np.matrix('0.09, 0,      0; \
-                             0,    0.0009, 0; \
-                             0,    0,      0.09')
+        self.__RL = np.matrix([[0.0225,0],
+                               [0,0.0225]])
 
-        self.__Q = np.matlib.zeros((4,4))
+        self.__RR = np.matrix([[0.09,0,0],
+                               [0,0.0009,0],
+                               [0,0,0.09]])
 
         #we can adjust these to get better accuracy
         self.__noise_ax = 9
@@ -57,31 +54,53 @@ class ExtendedKalmanFilter:
         '''
 
         #set F
-        self.__F[0,2] = dt
-        self.__F[1,3] = dt
-
+        self.__F = np.matrix([[1,0,dt,0],
+                              [0,1,0,dt],
+                              [0,0,1,0],
+                              [0,0,0,1]])
         #set Q
         dt2 = dt**2
         dt3 = dt**3
         dt4 = dt**4
 
-        self.__Q[0,1] = dt4/4*self.__noise_ax
-        self.__Q[0,2] = dt3/2*self.__noise_ax
+        e11 = dt4 * self.__noise_ax / 4
+        e13 = dt3 * self.__noise_ax / 2
+        e22 = dt4 * self.__noise_ay / 4
+        e24 = dt3 * self.__noise_ay /  2
+        e31 = dt3 * self.__noise_ax / 2
+        e33 = dt2 * self.__noise_ax
+        e42 = dt3 * self.__noise_ay / 2
+        e44 = dt2 * self.__noise_ay
 
-        self.__Q[1,1] = dt4/4*self.__noise_ay
-        self.__Q[1,3] = dt3/2*self.__noise_ay
-
-        self.__Q[2,0] = dt3/2*self.__noise_ax
-        self.__Q[2,2] = dt2*self.__noise_ax
-
-        self.__Q[3,1] = dt3/2*self.__noise_ay
-        self.__Q[3,3] = dt2*self.__noise_ay
+        self.__Q = np.matrix([[e11, 0, e13, 0],
+                              [0, e22, 0, e24],
+                              [e31, 0, e33, 0],
+                              [0, e42, 0, e44]])
 
     def recompute_HR(self):
         '''
         calculate_jacobian of the current state.
         '''
-        self.__HR = calculate_jacobian(self.__x)
+        px,py,vx,vy = state_vector_to_scalars(self.__x)
+
+        pxpy_squared = px**2+py**2
+        pxpy_squared_sqrt = sqrt(pxpy_squared)
+        pxpy_cubed = (pxpy_squared*pxpy_squared_sqrt)
+
+        if pxpy_squared < 1e-4:
+            self.__HR = np.matlib.zeros((3,4))
+            return
+
+        e11 = px/pxpy_squared_sqrt
+        e12 = py/pxpy_squared_sqrt
+        e21 = -py/pxpy_squared
+        e22 = px/pxpy_squared
+        e31 = py*(vx*py - vy*px)/pxpy_cubed
+        e32 = px*(px*vy - py*vx)/pxpy_cubed
+
+        self.__HR = np.matrix([[e11, e12, 0, 0],
+                               [e21, e22, 0, 0],
+                               [e31, e32, e11, e12]])
 
     def predict(self):
         '''
