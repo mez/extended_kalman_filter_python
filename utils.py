@@ -33,8 +33,8 @@ def polar_2_cart(ro, phi, ro_dot):
     phi: bearing
     ro_dot: range rate
 
-    Takes the polar coord based radar reading and convert to cart coord x,y
-    return (x,y)
+    Takes the polar coord based radar reading and convert to cart coord x,y, vx, vy
+    return (x,y, vx, vy)
     '''
     return (cos(phi) * ro, sin(phi) * ro, ro_dot * cos(phi) , ro_dot * sin(phi))
 
